@@ -4743,6 +4743,7 @@ func TestContext2Apply_destroyNestedModuleWithAttrsReferencingResource(t *testin
 			},
 		})
 
+		fmt.Println("'----- start destroy plan")
 		plan, err := ctx.Plan()
 		if err != nil {
 			t.Fatalf("destroy plan err: %s", err)
@@ -4767,6 +4768,7 @@ func TestContext2Apply_destroyNestedModuleWithAttrsReferencingResource(t *testin
 			t.Fatalf("err: %s", err)
 		}
 
+		fmt.Println("----- apply destroy context")
 		state, err = ctx.Apply()
 		if err != nil {
 			t.Fatalf("destroy apply err: %s", err)

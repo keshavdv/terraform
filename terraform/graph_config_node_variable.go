@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/hashicorp/terraform/config"
 	"github.com/hashicorp/terraform/config/module"
 	"github.com/hashicorp/terraform/dag"
@@ -106,6 +107,8 @@ func (n *GraphNodeConfigVariable) Noop(opts *NoopOpts) bool {
 			return false
 		}
 		log.Printf("[DEBUG] Variable has no included destroy edges: noop!")
+
+		fmt.Println("[XXXX]", spew.Sdump(n))
 		return true
 	}
 
