@@ -24,7 +24,7 @@ func resourceCloudFlareZone() *schema.Resource {
 
 			"organization": &schema.Schema{
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
 			},
 
 			"plan": &schema.Schema{
@@ -40,66 +40,82 @@ func resourceCloudFlareZone() *schema.Resource {
 						"advanced_ddos": &schema.Schema{
 							Type:     schema.TypeString,
 							Optional: true,
+							Computed: true,
 						},
 						"always_online": &schema.Schema{
 							Type:     schema.TypeString,
 							Optional: true,
+							Computed: true,
 						},
 						"browser_cache_ttl": &schema.Schema{
 							Type:     schema.TypeInt,
 							Optional: true,
+							Computed: true,
 						},
 						"browser_check": &schema.Schema{
 							Type:     schema.TypeString,
 							Optional: true,
+							Computed: true,
 						},
 						"cache_level": &schema.Schema{
 							Type:     schema.TypeString,
 							Optional: true,
+							Computed: true,
 						},
 						"challenge_ttl": &schema.Schema{
 							Type:     schema.TypeInt,
 							Optional: true,
+							Computed: true,
 						},
 						"cname_flattening": &schema.Schema{
 							Type:     schema.TypeString,
 							Optional: true,
+							Computed: true,
 						},
 						"development_mode": &schema.Schema{
 							Type:     schema.TypeString,
 							Optional: true,
+							Computed: true,
 						},
 						"edge_cache_ttl": &schema.Schema{
 							Type:     schema.TypeInt,
 							Optional: true,
+							Computed: true,
 						},
 						"email_obfuscation": &schema.Schema{
 							Type:     schema.TypeString,
 							Optional: true,
+							Computed: true,
 						},
 						"hotlink_protection": &schema.Schema{
 							Type:     schema.TypeString,
 							Optional: true,
+							Computed: true,
 						},
 						"http2": &schema.Schema{
 							Type:     schema.TypeString,
 							Optional: true,
+							Computed: true,
 						},
 						"ip_geolocation": &schema.Schema{
 							Type:     schema.TypeString,
 							Optional: true,
+							Computed: true,
 						},
 						"ipv6": &schema.Schema{
 							Type:     schema.TypeString,
 							Optional: true,
+							Computed: true,
 						},
 						"max_upload": &schema.Schema{
 							Type:     schema.TypeInt,
 							Optional: true,
+							Computed: true,
 						},
 						"minify": &schema.Schema{
 							Type:     schema.TypeMap,
 							Optional: true,
+							Computed: true,
 
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
@@ -121,10 +137,12 @@ func resourceCloudFlareZone() *schema.Resource {
 						"mirage": &schema.Schema{
 							Type:     schema.TypeString,
 							Optional: true,
+							Computed: true,
 						},
 						"mobile_redirect": &schema.Schema{
 							Type:     schema.TypeMap,
 							Optional: true,
+							Computed: true,
 
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
@@ -146,66 +164,82 @@ func resourceCloudFlareZone() *schema.Resource {
 						"origin_error_page_pass_thru": &schema.Schema{
 							Type:     schema.TypeString,
 							Optional: true,
+							Computed: true,
 						},
 						"polish": &schema.Schema{
 							Type:     schema.TypeString,
 							Optional: true,
+							Computed: true,
 						},
 						"prefetch_preload": &schema.Schema{
 							Type:     schema.TypeString,
 							Optional: true,
+							Computed: true,
 						},
 						"pseudo_ipv4": &schema.Schema{
 							Type:     schema.TypeString,
 							Optional: true,
+							Computed: true,
 						},
 						"response_buffering": &schema.Schema{
 							Type:     schema.TypeString,
 							Optional: true,
+							Computed: true,
 						},
 						"rocket_loader": &schema.Schema{
 							Type:     schema.TypeString,
 							Optional: true,
+							Computed: true,
 						},
 						"security_level": &schema.Schema{
 							Type:     schema.TypeString,
 							Optional: true,
+							Computed: true,
 						},
 						"server_side_exclude": &schema.Schema{
 							Type:     schema.TypeString,
 							Optional: true,
+							Computed: true,
 						},
 						"sha1_support": &schema.Schema{
 							Type:     schema.TypeString,
 							Optional: true,
+							Computed: true,
 						},
 						"sort_query_string_for_cache": &schema.Schema{
 							Type:     schema.TypeString,
 							Optional: true,
+							Computed: true,
 						},
 						"ssl": &schema.Schema{
 							Type:     schema.TypeString,
 							Optional: true,
+							Computed: true,
 						},
 						"tls_1_2_only": &schema.Schema{
 							Type:     schema.TypeString,
 							Optional: true,
+							Computed: true,
 						},
 						"tls_client_auth": &schema.Schema{
 							Type:     schema.TypeString,
 							Optional: true,
+							Computed: true,
 						},
 						"true_client_ip_header": &schema.Schema{
 							Type:     schema.TypeString,
 							Optional: true,
+							Computed: true,
 						},
 						"waf": &schema.Schema{
 							Type:     schema.TypeString,
 							Optional: true,
+							Computed: true,
 						},
 						"websockets": &schema.Schema{
 							Type:     schema.TypeString,
 							Optional: true,
+							Computed: true,
 						},
 					},
 				},
@@ -234,16 +268,15 @@ func resourceCloudFlareZoneCreate(d *schema.ResourceData, meta interface{}) erro
 	client := meta.(*cloudflare.API)
 
 	var matchingOrg cloudflare.Organization
-	if d.Get("organization") != nil {
+	if expected_org, ok := d.GetOk("organization"); ok {
 		userDetails, err := client.UserDetails()
 		if err != nil {
 			return fmt.Errorf("Error getting user's organizations: %s", err)
 		}
 		found := false
-		expected_org := d.Get("organization").(string)
 		for _, org := range userDetails.Organizations {
-			if org.Name == expected_org {
-				log.Printf("[DEBUG] Found organization matching '%s'", expected_org)
+			if org.Name == expected_org.(string) {
+				log.Printf("[DEBUG] Found organization matching '%s'", expected_org.(string))
 				found = true
 				matchingOrg = org
 				break
@@ -251,7 +284,7 @@ func resourceCloudFlareZoneCreate(d *schema.ResourceData, meta interface{}) erro
 		}
 
 		if !found {
-			return fmt.Errorf("Could not find organization '%s'", expected_org)
+			return fmt.Errorf("Could not find organization '%s'", expected_org.(string))
 		}
 	}
 
@@ -320,16 +353,18 @@ func buildCloudFlareZoneSettings(d *schema.ResourceData, meta interface{}) ([]cl
 
 		for k, v := range settings[0].(map[string]interface{}) {
 			if _, ok := d.GetOk("settings.0." + k); ok {
-				setting := cloudflare.ZoneSetting{}
-				setting.ID = k
-				setting.Value = v
-				log.Printf("[DEBUG] CloudFlare setting '%s' is '%v'", k, v)
-				log.Printf("[DEBUG] %s", reflect.TypeOf(v))
-				settings_to_apply = append(settings_to_apply, setting)
+				if d.HasChange("settings.0." + k) {
+					setting := cloudflare.ZoneSetting{}
+					setting.ID = k
+					setting.Value = v
+					log.Printf("[DEBUG] CloudFlare setting '%s' is '%v'", k, v)
+					log.Printf("[DEBUG] %s", reflect.TypeOf(v))
+					settings_to_apply = append(settings_to_apply, setting)
+				}
 			}
 		}
 	}
-	log.Printf("[DEBUG] CloudFlare settings ares '%v'", settings_to_apply)
+	log.Printf("[DEBUG] CloudFlare settings are '%v'", settings_to_apply)
 
 	return settings_to_apply, nil
 }
@@ -347,22 +382,19 @@ func resourceCloudFlareZoneRead(d *schema.ResourceData, meta interface{}) error 
 	d.Set("dev_mode", zone.DevMode)
 	d.Set("created_on", zone.CreatedOn)
 
-	// if v, ok := d.GetOk("settings"); ok {
-	// 	expectedSettings := v.(*schema.Set).List()[0]
-	// 	settings, err := client.GetZoneSettings(d.Id())
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// 	log.Printf("map is %s", zoneSettingsToMap(d, settings))
+	settings, err := client.GetZoneSettings(d.Id())
+	if err != nil {
+		return err
+	}
+	log.Printf("map is %s", zoneSettingsToMap(settings))
 
-	// 	foo := zoneSettingsToMap(settings)
-	// 	// err = d.Set("settings", []interface{}{foo})
+	foo := zoneSettingsToMap(settings)
+	err = d.Set("settings", []interface{}{foo})
 
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// }
-	// resourceCloudFlareZoneUpdate(d, meta)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
